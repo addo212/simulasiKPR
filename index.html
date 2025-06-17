@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simulasi KPR Fixed Berjangka</title>
+  <style>
+    /* Reset and base */
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background: linear-gradient(135deg, #f7f9fc 0%, #ffffff 100%);
+      color: #262626;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.6;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 32px 36px;
+      border-radius: 20px;
+      box-shadow:
+        0 5px 15px rgba(22, 45, 61, 0.15),
+        0 2px 8px rgba(22, 45, 61, 0.10);
+      transition: box-shadow 0.3s ease;
+    }
+    .container:hover {
+      box-shadow:
+        0 8px 28px rgba(22, 45, 61, 0.25),
+        0 3px 20px rgba(22, 45, 61, 0.15);
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 2.8rem;
+      text-align: center;
+      margin-bottom: 6px;
+      color: #00796b; /* Canva inspired emerald teal */
+      letter-spacing: -0.03em;
+      user-select: text;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #546e7a;
+      margin-bottom: 32px;
+      user-select: text;
+    }
+
+    label {
+      font-weight: 600;
+      color: #37474f;
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+      user-select: text;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      border: 1.8px solid #cfd8dc;
+      font-size: 1rem;
+      color: #263238;
+      background: #fefefe;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.04);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      outline-offset: 2px;
+      user-select: text;
+      box-sizing: border-box;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    input:focus {
+      border-color: #00856f;
+      box-shadow: 0 0 8px rgba(0, 133, 111, 0.35);
+      outline: none;
+      background: #fff;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 24px 28px;
+      margin-bottom: 32px;
+    }
+
+    .baris1, .baris2 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pair-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .baris3 {
+      grid-template-columns: 1fr;
+    }
+
+    button {
+      padding: 16px 28px;
+      background: linear-gradient(135deg, #00796b 0%, #004d40 100%);
+      border: none;
+      border-radius: 14px;
+      color: #e0f2f1;
+      font-weight: 700;
+      font-size: 1.05rem;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(0,121,107,0.42);
+      transition: background 0.4s ease, box-shadow 0.3s ease;
+      user-select: none;
+      letter-spacing: 0.03em;
+    }
+
+    button:hover {
+      background: linear-gradient(135deg, #009688 0%, #004d40 100%);
+      box-shadow: 0 9px 21px rgba(0,150,136,0.5);
+    }
+
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 10px rgba(0,121,107,0.34);
+    }
+
+    .actions {
+      text-align: right;
+      margin-top: 12px;
+      user-select: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 4px 18px rgba(22, 45, 61, 0.10);
+      margin-top: 32px;
+      background: white;
+      font-size: 0.93rem;
+      user-select: text;
+    }
+
+    thead tr {
+      background: linear-gradient(90deg, #00796b 0%, #004d40 100%);
+      color: #e0f2f1;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      user-select: none;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: right;
+      border-bottom: 1px solid #e0f2f1;
+      user-select: text;
+    }
+
+    th:first-child, td:first-child {
+      border-right: 1px solid #e0f2f1;
+      text-align: center;
+      font-weight: 600;
+      user-select: text;
+    }
+
+    tbody tr:hover {
+      background-color: #e0f2f1;
+    }
+
+    .summary {
+      margin-top: 36px;
+      background: #e0f2f1;
+      padding: 22px 28px;
+      border-radius: 20px;
+      border-left: 6px solid #00796b;
+      box-shadow: 0 4px 18px rgba(0,121,107,0.15);
+      user-select: text;
+    }
+
+    .summary h3 {
+      margin-top: 0;
+      color: #004d40;
+      font-weight: 700;
+      font-size: 1.25rem;
+      user-select: text;
+    }
+
+    .summary p {
+      margin: 8px 0;
+      color: #37474f;
+      font-weight: 500;
+      user-select: text;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .baris1, .baris2 {
+        grid-template-columns: 1fr;
+      }
+      .form-grid {
+        gap: 24px 0;
+      }
+      .container {
+        padding: 24px 26px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      button {
+        width: 100%;
+        padding: 14px 0;
+      }
+      .actions {
+        text-align: center;
+      }
+      table {
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Simulasi KPR Fixed Berjangka</h1>
+    <div class="subtitle">by Addo</div>
+
+    <!-- Input Baris 1 -->
+    <div class="form-grid baris1">
+      <div>
+        <label>Harga Rumah:</label>
+        <input type="text" id="hargaRumah" />
+      </div>
+      <div>
+        <label>DP (%):</label>
+        <input type="number" id="dpPersen" step="0.01" />
+      </div>
+      <div>
+        <label>Tenor Kredit (tahun):</label>
+        <input type="number" id="tenor" />
+      </div>
+    </div>
+
+    <!-- Input Baris 2 -->
+    <div class="form-grid baris2">
+      <div class="pair-group">
+        <div>
+          <label>Masa Tahun Fix Pertama:</label>
+          <input type="number" id="fixed1Year" />
+        </div>
+        <div>
+          <label>Bunga Fixed Pertama (p.a):</label>
+          <input type="text" class="bunga" id="fixed1Rate" />
+        </div>
+      </div>
+      <div class="pair-group">
+        <div>
+          <label>Masa Tahun Fix Kedua:</label>
+          <input type="number" id="fixed2Year" />
+        </div>
+        <div>
+          <label>Bunga Fixed Kedua (p.a):</label>
+          <input type="text" class="bunga" id="fixed2Rate" />
+        </div>
+      </div>
+      <div class="pair-group">
+        <div>
+          <label>Masa Tahun Fix Ketiga:</label>
+          <input type="number" id="fixed3Year" />
+        </div>
+        <div>
+          <label>Bunga Fixed Ketiga (p.a):</label>
+          <input type="text" class="bunga" id="fixed3Rate" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Input Baris 3 -->
+    <div class="form-grid baris3">
+      <div>
+        <label>Floating Rate (p.a):</label>
+        <input type="text" class="bunga" id="floatingRate" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button onclick="hitungAmortisasi()">Hitung Amortisasi</button>
+      <button onclick="cetakPDF()">Cetak PDF</button>
+    </div>
+
+    <div id="hasil">
+      <div id="ringkasanBiaya" class="summary"></div>
+      <div id="tabelHasil"></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("hargaRumah").addEventListener("input", function(e) {
+      let value = e.target.value.replace(/\./g, "").replace(/\D/g, "");
+      e.target.value = Number(value).toLocaleString("id-ID");
+    });
+
+    document.querySelectorAll(".bunga").forEach(function(input) {
+      input.addEventListener("blur", function(e) {
+        let raw = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+        if (raw) {
+          let number = parseFloat(raw);
+          e.target.value = isNaN(number) ? '' : number.toFixed(2) + '%';
+        }
+      });
+      input.addEventListener("focus", function(e) {
+        e.target.value = e.target.value.replace('%', '');
+      });
+    });
+
+    function parseCurrency(value) {
+      return parseFloat(value.replace(/\./g, "").replace(",", ".")) || 0;
+    }
+
+    function parsePercent(str) {
+      return parseFloat(str.replace("%", "").replace(",", ".")) || 0;
+    }
+
+    function hitungAmortisasi() {
+      const hargaRumah = parseCurrency(document.getElementById("hargaRumah").value);
+      const dpPersen = parseFloat(document.getElementById("dpPersen").value) / 100;
+      const tenor = parseInt(document.getElementById("tenor").value);
+      const bulan = tenor * 12;
+      const pinjaman = hargaRumah * (1 - dpPersen);
+
+      const fixed1Year = parseInt(document.getElementById("fixed1Year").value);
+      const fixed1Rate = parsePercent(document.getElementById("fixed1Rate").value);
+      const fixed2Year = parseInt(document.getElementById("fixed2Year").value);
+      const fixed2Rate = parsePercent(document.getElementById("fixed2Rate").value);
+      const fixed3Year = parseInt(document.getElementById("fixed3Year").value);
+      const fixed3Rate = parsePercent(document.getElementById("fixed3Rate").value);
+      const floatingRate = parsePercent(document.getElementById("floatingRate").value);
+
+      const rows = [];
+      let sisa = pinjaman;
+      let totalBunga = 0;
+      let totalAngsuran = 0;
+
+      for (let i = 1; i <= bulan; i++) {
+        let rate = floatingRate;
+        if (i <= fixed1Year * 12) rate = fixed1Rate;
+        else if (i <= (fixed1Year + fixed2Year) * 12) rate = fixed2Rate;
+        else if (i <= (fixed1Year + fixed2Year + fixed3Year) * 12) rate = fixed3Rate;
+
+        const ratePerBulan = rate / 100 / 12;
+        const n = bulan - i + 1;
+        const bunga = sisa * ratePerBulan;
+        const angsuranBulanan = sisa * ratePerBulan / (1 - Math.pow(1 + ratePerBulan, -n));
+        const pokok = angsuranBulanan - bunga;
+        const sisaBaru = sisa - pokok;
+
+        totalBunga += bunga;
+        totalAngsuran += angsuranBulanan;
+
+        rows.push({
+          bulan: i,
+          rate: rate,
+          bunga: bunga,
+          pokok: pokok,
+          angsuran: angsuranBulanan,
+          sisaPinjaman: sisaBaru
+        });
+
+        sisa = sisaBaru;
+      }
+
+      const biayaNotaris = pinjaman * 0.07;
+      const biayaProvisi = hargaRumah * 0.01;
+      const biayaAdmin = 500000;
+      const nominalDP = hargaRumah * dpPersen;
+      const angsuranPertama = rows[0].angsuran;
+      const totalAwal = nominalDP + biayaNotaris + biayaProvisi + biayaAdmin + angsuranPertama;
+
+      document.getElementById("ringkasanBiaya").innerHTML = `
+        <h3>Ringkasan Biaya Awal</h3>
+        <p>Nominal DP: Rp ${nominalDP.toLocaleString("id-ID")}</p>
+        <p>Biaya Notaris & Lainnya (7% dari pinjaman): Rp ${biayaNotaris.toLocaleString("id-ID")}</p>
+        <p>Biaya Provisi (1% dari harga rumah): Rp ${biayaProvisi.toLocaleString("id-ID")}</p>
+        <p>Biaya Admin: Rp ${biayaAdmin.toLocaleString("id-ID")}</p>
+        <p>Angsuran Bulan Pertama: Rp ${angsuranPertama.toLocaleString("id-ID")}</p>
+        <p><strong>Total Biaya Awal: Rp ${totalAwal.toLocaleString("id-ID")}</strong></p>
+        <hr>
+        <p>Total Bunga Dibayarkan: Rp ${totalBunga.toLocaleString("id-ID")}</p>
+        <p>Total Angsuran Seluruhnya: Rp ${totalAngsuran.toLocaleString("id-ID")}</p>
+      `;
+
+      let html = `<table>
+        <thead>
+          <tr>
+            <th>Bulan</th>
+            <th>Suku Bunga (p.a)</th>
+            <th>Bunga (Rp)</th>
+            <th>Angsuran Pokok</th>
+            <th>Angsuran Bulanan</th>
+            <th>Sisa Pinjaman</th>
+          </tr>
+        </thead><tbody>`;
+
+      rows.forEach(row => {
+        html += `<tr>
+          <td>${row.bulan}</td>
+          <td>${row.rate.toFixed(2)}%</td>
+          <td>${row.bunga.toLocaleString("id-ID", { maximumFractionDigits: 0 })}</td>
+          <td>${row.pokok.toLocaleString("id-ID", { maximumFractionDigits: 0 })}</td>
+          <td>${row.angsuran.toLocaleString("id-ID", { maximumFractionDigits: 0 })}</td>
+          <td>${row.sisaPinjaman.toLocaleString("id-ID", { maximumFractionDigits: 0 })}</td>
+        </tr>`;
+      });
+
+      html += "</tbody></table>";
+      document.getElementById("tabelHasil").innerHTML = html;
+    }
+
+    function cetakPDF() {
+      const hasil = document.getElementById("hasil").innerHTML;
+      const win = window.open('', '_blank');
+      win.document.write(`<html><head><title>Hasil Simulasi</title></head><body>${hasil}</body></html>`);
+      win.document.close();
+      win.focus();
+      win.print();
+      win.close();
+    }
+  </script>
+</body>
+</html>
+
