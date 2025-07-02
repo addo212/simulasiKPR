@@ -6,7 +6,6 @@
   <title>Simulasi KPR Fixed Berjangka</title>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- CDN html2pdf.js DIHAPUS DARI SINI -->
   <style>
     /* Reset and base */
     body {
@@ -68,7 +67,7 @@
       user-select: text;
     }
 
-    input {
+    input, select { /* Tambahkan select di sini */
       width: 100%;
       padding: 14px 18px;
       border-radius: 12px;
@@ -85,7 +84,7 @@
       min-width: 0;
     }
 
-    input:focus {
+    input:focus, select:focus { /* Tambahkan select di sini */
       border-color: #00856f;
       box-shadow: 0 0 8px rgba(0, 133, 111, 0.35);
       outline: none;
@@ -98,9 +97,22 @@
       margin-bottom: 32px;
     }
 
-    .baris1, .baris2 {
+    .baris1 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+
+    .baris2 {
+      /* Ubah ini untuk mengakomodasi dropdown di baris terpisah */
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      /* Tambahkan ini untuk memastikan dropdown menempati seluruh lebar */
+      grid-template-rows: auto auto; /* Baris pertama untuk dropdown, baris kedua untuk input bunga */
+    }
+
+    /* Gaya untuk dropdown agar menempati seluruh lebar di baris2 */
+    .baris2 .full-width-item {
+        grid-column: 1 / -1; /* Membentang dari kolom pertama sampai terakhir */
+    }
+
 
     .pair-group {
       display: flex;
@@ -118,6 +130,10 @@
     @media (max-width: 768px) {
         .baris3.two-columns {
             grid-template-columns: 1fr; /* Kembali ke 1 kolom di mobile */
+        }
+        /* Di mobile, semua item di baris2 akan menjadi 1 kolom, jadi full-width-item tidak perlu perlakuan khusus */
+        .baris2 .full-width-item {
+            grid-column: auto; /* Reset untuk mobile */
         }
     }
 
@@ -307,6 +323,13 @@
 
     <!-- Input Baris 2 -->
     <div class="form-grid baris2">
+      <!-- Dropdown Pilihan Program Bunga - DIPINDAHKAN DAN DIBERI KELAS full-width-item -->
+      <div class="full-width-item">
+        <label for="pilihProgramBunga">Pilih Program Bunga:</label>
+        <select id="pilihProgramBunga" onchange="isiBungaDariProgram()"></select>
+      </div>
+
+      <!-- Input bunga lainnya tetap di sini -->
       <div class="pair-group">
         <div>
           <label>Periode Skema Bunga 1:</label>
@@ -382,6 +405,61 @@
   </div>
 
   <script>
+    // Data Program KPR
+    const programKPR = [
+      {
+        "namaProgram": "Mandiri B Fixed 3 Tahun Minimal 10",
+        "skemaBunga": [
+          {"tahun": 3, "rate": 4.6}
+        ],
+        "floatingRate": 13
+      },
+      {
+        "namaProgram": "Mandiri B Fixed 3 Tahun Minimal 8",
+        "skemaBunga": [
+          {"tahun": 3, "rate": 6.6}
+        ],
+        "floatingRate": 13
+      },
+      {
+        "namaProgram": "Mandiri B Fixed 5 Tahun Minimal 11",
+        "skemaBunga": [
+          {"tahun": 5, "rate": 5.66}
+        ],
+        "floatingRate": 13
+      },
+      {
+        "namaProgram": "Mandiri B Fixed 10 Tahun Minimal 18",
+        "skemaBunga": [
+          {"tahun": 10, "rate": 7.5}
+        ],
+        "floatingRate": 13
+      },
+      {
+        "namaProgram": "Mandiri C Fixed 5 Tahun Minimal 11",
+        "skemaBunga": [
+          {"tahun": 5, "rate": 6.6}
+        ],
+        "floatingRate": 13
+      },
+      {
+        "namaProgram": "Mandiri C Fixed 10 Tahun Minimal 15",
+        "skemaBunga": [
+          {"tahun": 10, "rate": 7.96}
+        ],
+        "floatingRate": 13
+      },
+      {
+        "namaProgram": "Mandiri Berjenjang Fix 10 Tahun min 10",
+        "skemaBunga": [
+          {"tahun": 3, "rate": 7.68},
+          {"tahun": 3, "rate": 8.88},
+          {"tahun": 4, "rate": 9.88}
+        ],
+        "floatingRate": 13
+      }
+    ];
+
     // Fungsi untuk memformat input mata uang
     document.getElementById("hargaRumah").addEventListener("input", function(e) {
       let value = e.target.value.replace(/\./g, "").replace(/\D/g, "");
@@ -415,6 +493,65 @@
       return parseFloat(str.replace("%", "").replace(",", ".")) || 0;
     }
 
+    // Fungsi untuk mengisi dropdown program bunga saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+      const selectElement = document.getElementById('pilihProgramBunga');
+      // Tambahkan opsi default
+      const defaultOption = document.createElement('option');
+      defaultOption.value = "";
+      defaultOption.textContent = "Pilih Program Bunga";
+      selectElement.appendChild(defaultOption);
+
+      programKPR.forEach((program, index) => {
+        const option = document.createElement('option');
+        option.value = index; // Menggunakan indeks sebagai nilai untuk memudahkan pencarian
+        option.textContent = program.namaProgram;
+        selectElement.appendChild(option);
+      });
+    });
+
+    // Fungsi untuk mengisi input bunga berdasarkan pilihan dropdown
+    function isiBungaDariProgram() {
+      const selectElement = document.getElementById('pilihProgramBunga');
+      const selectedIndex = selectElement.value;
+
+      // Kosongkan semua input bunga terlebih dahulu
+      document.getElementById('fixed1Year').value = '';
+      document.getElementById('fixed1Rate').value = '';
+      document.getElementById('fixed2Year').value = '';
+      document.getElementById('fixed2Rate').value = '';
+      document.getElementById('fixed3Year').value = '';
+      document.getElementById('fixed3Rate').value = '';
+      document.getElementById('floatingRate').value = '';
+
+      if (selectedIndex !== "") { // Pastikan bukan opsi default
+        const selectedProgram = programKPR[selectedIndex];
+
+        // Isi periode fixed
+        if (selectedProgram.skemaBunga[0]) {
+          document.getElementById('fixed1Year').value = selectedProgram.skemaBunga[0].tahun;
+          document.getElementById('fixed1Rate').value = selectedProgram.skemaBunga[0].rate.toFixed(2) + '%';
+        }
+        if (selectedProgram.skemaBunga[1]) {
+          document.getElementById('fixed2Year').value = selectedProgram.skemaBunga[1].tahun;
+          document.getElementById('fixed2Rate').value = selectedProgram.skemaBunga[1].rate.toFixed(2) + '%';
+        }
+        if (selectedProgram.skemaBunga[2]) {
+          document.getElementById('fixed3Year').value = selectedProgram.skemaBunga[2].tahun;
+          document.getElementById('fixed3Rate').value = selectedProgram.skemaBunga[2].rate.toFixed(2) + '%';
+        }
+
+        // Isi floating rate
+        document.getElementById('floatingRate').value = selectedProgram.floatingRate.toFixed(2) + '%';
+
+        // Panggil event blur untuk memformat angka bunga
+        document.querySelectorAll(".bunga").forEach(input => {
+            input.dispatchEvent(new Event('blur'));
+        });
+      }
+    }
+
+
     function hitungAmortisasi() {
       const hargaRumah = parseCurrency(document.getElementById("hargaRumah").value);
       const dpPersen = parseFloat(document.getElementById("dpPersen").value) / 100;
@@ -422,14 +559,15 @@
       const bulan = tenor * 12;
       const pinjaman = hargaRumah * (1 - dpPersen);
 
-      const fixed1Year = parseInt(document.getElementById("fixed1Year").value);
-      const fixed1Rate = parsePercent(document.getElementById("fixed1Rate").value);
-      const fixed2Year = parseInt(document.getElementById("fixed2Year").value);
-      const fixed2Rate = parsePercent(document.getElementById("fixed2Rate").value);
-      const fixed3Year = parseInt(document.getElementById("fixed3Year").value);
-      const fixed3Rate = parsePercent(document.getElementById("fixed3Rate").value);
-      const floatingRate = parsePercent(document.getElementById("floatingRate").value);
-      const biayaNotaris = parseCurrency(document.getElementById("biayaNotaris").value); // Ambil nilai langsung dari input
+      // Mengambil nilai dari input, bukan dari objek programKPR
+      const fixed1Year = parseInt(document.getElementById("fixed1Year").value) || 0;
+      const fixed1Rate = parsePercent(document.getElementById("fixed1Rate").value) || 0;
+      const fixed2Year = parseInt(document.getElementById("fixed2Year").value) || 0;
+      const fixed2Rate = parsePercent(document.getElementById("fixed2Rate").value) || 0;
+      const fixed3Year = parseInt(document.getElementById("fixed3Year").value) || 0;
+      const fixed3Rate = parsePercent(document.getElementById("fixed3Rate").value) || 0;
+      const floatingRate = parsePercent(document.getElementById("floatingRate").value) || 0;
+      const biayaNotaris = parseCurrency(document.getElementById("biayaNotaris").value);
 
       const rows = [];
       let sisa = pinjaman;
@@ -465,11 +603,10 @@
         sisa = sisaBaru;
       }
 
-      // const biayaNotaris = pinjaman * 0.07; // Baris ini dihapus/diubah
       const biayaProvisi = hargaRumah * 0.01;
       const biayaAdmin = 500000;
       const nominalDP = hargaRumah * dpPersen;
-      const angsuranPertama = rows.length > 0 ? rows[0].angsuran : 0; // Pastikan ada angsuran pertama
+      const angsuranPertama = rows.length > 0 ? rows[0].angsuran : 0;
       const totalAwal = nominalDP + biayaNotaris + biayaProvisi + biayaAdmin + angsuranPertama;
 
       document.getElementById("ringkasanBiaya").innerHTML = `
@@ -538,4 +675,5 @@
   </script>
 </body>
 </html>
+
 
