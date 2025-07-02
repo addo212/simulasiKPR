@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Simulasi KPR Fixed Berjangka</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     /* Reset and base */
     body {
@@ -106,8 +108,18 @@
     }
 
     .baris3 {
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr; /* Tetap 1 kolom */
     }
+    /* Tambahan untuk baris 3 agar ada 2 input */
+    .baris3.two-columns {
+        grid-template-columns: repeat(2, minmax(0, 1fr)); /* Mengubah menjadi 2 kolom */
+    }
+    @media (max-width: 768px) {
+        .baris3.two-columns {
+            grid-template-columns: 1fr; /* Kembali ke 1 kolom di mobile */
+        }
+    }
+
 
     button {
       padding: 16px 28px;
@@ -231,6 +243,44 @@
         font-size: 0.85rem;
       }
     }
+    .note-pengisian {
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #546e7a;
+      text-align: left;
+    }
+    .image-toggle-container {
+      text-align: center;
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+    .image-toggle-container button {
+      background: #00796b;
+      color: #e0f2f1;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      transition: background 0.3s ease;
+      display: inline-flex; /* Untuk menempatkan ikon dan teks sejajar */
+      align-items: center; /* Pusatkan vertikal */
+      justify-content: center; /* Pusatkan horizontal */
+      gap: 8px; /* Jarak antara ikon dan teks */
+    }
+    .image-toggle-container button:hover {
+      background: #005f54;
+    }
+    .example-image {
+      max-width: 100%;
+      height: auto;
+      display: block; /* Agar gambar tidak ada spasi di bawahnya */
+      margin: 15px auto 0 auto; /* Pusatkan gambar dan beri sedikit margin atas */
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
@@ -258,42 +308,65 @@
     <div class="form-grid baris2">
       <div class="pair-group">
         <div>
-          <label>Masa Tahun Fix Pertama:</label>
+          <label>Periode Skema Bunga 1:</label>
           <input type="number" id="fixed1Year" />
         </div>
         <div>
-          <label>Bunga Fixed Pertama (p.a):</label>
+          <label>Suku Bunga Periode 1 (p.a):</label>
           <input type="text" class="bunga" id="fixed1Rate" />
         </div>
       </div>
       <div class="pair-group">
         <div>
-          <label>Masa Tahun Fix Kedua:</label>
+          <label>Periode Skema Bunga 2:</label>
           <input type="number" id="fixed2Year" />
         </div>
         <div>
-          <label>Bunga Fixed Kedua (p.a):</label>
+          <label>Suku Bunga Periode 2 (p.a):</label>
           <input type="text" class="bunga" id="fixed2Rate" />
         </div>
       </div>
       <div class="pair-group">
         <div>
-          <label>Masa Tahun Fix Ketiga:</label>
+          <label>Periode Skema Bunga 3:</label>
           <input type="number" id="fixed3Year" />
         </div>
         <div>
-          <label>Bunga Fixed Ketiga (p.a):</label>
+          <label>Suku Bunga Periode 3 (p.a):</label>
           <input type="text" class="bunga" id="fixed3Rate" />
         </div>
       </div>
     </div>
 
     <!-- Input Baris 3 -->
-    <div class="form-grid baris3">
+    <div class="form-grid baris3 two-columns"> <!-- Tambahkan kelas two-columns di sini -->
       <div>
-        <label>Floating Rate (p.a):</label>
+        <label>Estimasi Rate Sisa Angsuran (p.a):</label>
         <input type="text" class="bunga" id="floatingRate" />
       </div>
+      <div>
+        <label>Biaya Notaris & Lainnya (Rp):</label>
+        <input type="text" id="biayaNotaris" />
+      </div>
+    </div>
+
+    <div class="note-pengisian">
+      <p><strong>Note Pengisian:</strong></p>
+      <ul>
+        <li>Periode Skema Bunga = Diisi Tahun Berlaku Suku Bunga</li>
+        <li>Suku Bunga Periode = Diisi bilangan desimal (*misal: 7.5)</li>
+        <li>Estimasi Rate Sisa Angsuran = Suku Bunga Floating Estimasi</li>
+        <li>Contoh pengisian, jika tenor 20 tahun dengan fix berjangka 3 step (3 tahun pertama 7.66, 3 tahun kedua 8.88, 4 tahun selanjutnya 9.88, sisa angsuran floating) maka Periode Skema Bunga 1 diisi 3, Suku Bunga Periode 1 diisi 7.66, dst sampai estimasi rate sisa. Namun jika hanya ada satu progam fixed dan selanjutnya floating cukup mengisi periode skema bunga 1 dan suku bunga periode 1, kemudian periode skema bunga 2 diisi masa tahun angsurannya dan rate estimasi.</li>
+      </ul>
+    </div>
+
+    <!-- Kontainer untuk tombol toggle dan gambar contoh -->
+    <div class="image-toggle-container">
+      <button onclick="toggleExampleImage()">
+        <i class="fas fa-eye"></i> <span id="toggleButtonText">Preview Contoh</span>
+      </button>
+      <!-- URL gambar Imgur yang sudah diubah ke direct link -->
+      <img id="exampleImage" class="example-image" src="https://i.imgur.com/eGqd7Bm.jpeg" alt="Contoh Pengisian Formulir" style="display:none;">
     </div>
 
     <div class="actions">
@@ -308,7 +381,14 @@
   </div>
 
   <script>
+    // Fungsi untuk memformat input mata uang
     document.getElementById("hargaRumah").addEventListener("input", function(e) {
+      let value = e.target.value.replace(/\./g, "").replace(/\D/g, "");
+      e.target.value = Number(value).toLocaleString("id-ID");
+    });
+
+    // Tambahkan event listener untuk input biayaNotaris
+    document.getElementById("biayaNotaris").addEventListener("input", function(e) {
       let value = e.target.value.replace(/\./g, "").replace(/\D/g, "");
       e.target.value = Number(value).toLocaleString("id-ID");
     });
@@ -348,6 +428,7 @@
       const fixed3Year = parseInt(document.getElementById("fixed3Year").value);
       const fixed3Rate = parsePercent(document.getElementById("fixed3Rate").value);
       const floatingRate = parsePercent(document.getElementById("floatingRate").value);
+      const biayaNotaris = parseCurrency(document.getElementById("biayaNotaris").value); // Ambil nilai langsung dari input
 
       const rows = [];
       let sisa = pinjaman;
@@ -363,7 +444,8 @@
         const ratePerBulan = rate / 100 / 12;
         const n = bulan - i + 1;
         const bunga = sisa * ratePerBulan;
-        const angsuranBulanan = sisa * ratePerBulan / (1 - Math.pow(1 + ratePerBulan, -n));
+        // Perhitungan angsuran bulanan menggunakan rumus anuitas
+        const angsuranBulanan = (sisa * ratePerBulan) / (1 - Math.pow(1 + ratePerBulan, -n));
         const pokok = angsuranBulanan - bunga;
         const sisaBaru = sisa - pokok;
 
@@ -382,17 +464,17 @@
         sisa = sisaBaru;
       }
 
-      const biayaNotaris = pinjaman * 0.07;
+      // const biayaNotaris = pinjaman * 0.07; // Baris ini dihapus/diubah
       const biayaProvisi = hargaRumah * 0.01;
       const biayaAdmin = 500000;
       const nominalDP = hargaRumah * dpPersen;
-      const angsuranPertama = rows[0].angsuran;
+      const angsuranPertama = rows.length > 0 ? rows[0].angsuran : 0; // Pastikan ada angsuran pertama
       const totalAwal = nominalDP + biayaNotaris + biayaProvisi + biayaAdmin + angsuranPertama;
 
       document.getElementById("ringkasanBiaya").innerHTML = `
         <h3>Ringkasan Biaya Awal</h3>
         <p>Nominal DP: Rp ${nominalDP.toLocaleString("id-ID")}</p>
-        <p>Biaya Notaris & Lainnya (7% dari pinjaman): Rp ${biayaNotaris.toLocaleString("id-ID")}</p>
+        <p>Biaya Notaris & Lainnya: Rp ${biayaNotaris.toLocaleString("id-ID")}</p>
         <p>Biaya Provisi (1% dari harga rumah): Rp ${biayaProvisi.toLocaleString("id-ID")}</p>
         <p>Biaya Admin: Rp ${biayaAdmin.toLocaleString("id-ID")}</p>
         <p>Angsuran Bulan Pertama: Rp ${angsuranPertama.toLocaleString("id-ID")}</p>
@@ -429,16 +511,26 @@
       document.getElementById("tabelHasil").innerHTML = html;
     }
 
-    function cetakPDF() {
-      const hasil = document.getElementById("hasil").innerHTML;
-      const win = window.open('', '_blank');
-      win.document.write(`<html><head><title>Hasil Simulasi</title></head><body>${hasil}</body></html>`);
-      win.document.close();
-      win.focus();
-      win.print();
-      win.close();
+    // Fungsi JavaScript untuk menampilkan/menyembunyikan gambar
+    function toggleExampleImage() {
+      const image = document.getElementById('exampleImage');
+      const buttonText = document.getElementById('toggleButtonText');
+      const buttonIcon = document.querySelector('.image-toggle-container button .fas');
+
+      if (image.style.display === 'none') {
+        image.style.display = 'block';
+        buttonText.textContent = 'Sembunyikan Contoh';
+        buttonIcon.classList.remove('fa-eye');
+        buttonIcon.classList.add('fa-eye-slash'); // Ganti ikon menjadi mata tertutup
+      } else {
+        image.style.display = 'none';
+        buttonText.textContent = 'Preview Contoh';
+        buttonIcon.classList.remove('fa-eye-slash');
+        buttonIcon.classList.add('fa-eye'); // Ganti ikon kembali menjadi mata terbuka
+      }
     }
   </script>
 </body>
 </html>
+
 
