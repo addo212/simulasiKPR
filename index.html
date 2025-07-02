@@ -6,8 +6,7 @@
   <title>Simulasi KPR Fixed Berjangka</title>
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- html2pdf.js CDN - DITAMBAHKAN DI SINI -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- CDN html2pdf.js DIHAPUS DARI SINI -->
   <style>
     /* Reset and base */
     body {
@@ -513,21 +512,9 @@
       document.getElementById("tabelHasil").innerHTML = html;
     }
 
-    // Fungsi untuk mencetak PDF - DITAMBAHKAN DI SINI
+    // Fungsi untuk mencetak PDF (menggunakan window.print())
     function cetakPDF() {
-      const element = document.getElementById('hasil'); // Elemen yang ingin Anda cetak (ringkasan dan tabel)
-
-      // Konfigurasi untuk html2pdf
-      const opt = {
-        margin:       10,
-        filename:     'simulasi_kpr.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: true, dpi: 192, letterRendering: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      // Panggil fungsi html2pdf
-      html2pdf().set(opt).from(element).save();
+      window.print(); // Ini akan memicu dialog cetak browser
     }
 
     // Fungsi JavaScript untuk menampilkan/menyembunyikan gambar
@@ -551,3 +538,4 @@
   </script>
 </body>
 </html>
+
